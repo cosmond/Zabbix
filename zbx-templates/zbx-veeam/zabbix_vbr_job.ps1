@@ -18,6 +18,8 @@
 # Add to Zabbix Agent
 #   UserParameter=vbr[*],%SystemRoot%\system32\WindowsPowerShell\v1.0\powershell.exe -nologo -command "& C:\Zabbix\zabbix_vbr_job.ps1 $1 $2"
 #
+# Requires the Powershell SDK to be installed from the Veeam Installer
+
 $version = "1.0.0"
 
 $ITEM = [string]$args[0]
@@ -86,6 +88,13 @@ switch ($ITEM) {
     } else {
 	0
     }
+  }
+  "LastPointCreationTime" {
+    $query = Get-VBRBackup | Where-Object {$_.JobId -like "*$ID*"}
+    $JobDate = $query.LastPointCreationTime
+    $Now = (get-date)
+    $TimeSinceRun = New-TimeSpan -Start $JobDate -End $Now
+    [string]$TimeSinceRun.TotalHours
   }
   default {
       Write-Host "-- ERROR -- : Need an option to work !"
